@@ -2,10 +2,6 @@
 // Created by christoph on 08.02.19.
 //
 
-//
-// Created by christoph on 15.12.18.
-//
-
 #include <iostream>
 #include <cstring>
 #include <string>
