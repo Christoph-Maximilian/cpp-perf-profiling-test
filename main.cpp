@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-#include "profiling.h"
+#include "PerfEvent.hpp"
 
 //#define INTERN_PROFILING
 
@@ -11,30 +11,42 @@ int fib(int x) {
     return fib(x - 1) + fib(x - 2);
 }
 
-// goal is to find out why the use of perf within c++ results in completely different numbers in cache misses
-// and instructions compared to use perf via the command line
-
-
 // 1st scenario
-// uncomment INTERN_PROFILING: `sudo ./perfstuff`,
-// start perf in other terminal "perf stat -e cache-misses,instructions - `pidof perfstuff`"
-// back in main terminal: press enter and wait until finished, then back to perf terminal: STRG+C
+// uncomment (define) INTERN_PROFILING
+// just run it
 
 // 2nd scenario
-// define INTERN_PROFILING,
-// just run it, and compare the results with the previous scenario
-int main() {
-    std::cout << "press enter";
+// comment INTERN_PROFILING: `./perfstuff`,
+// start perf in other terminal "perf stat -e cache-misses,instructions -p `pidof perfstuff`"
+// back in main terminal: press enter and wait until finished, then back to perf terminal: STRG+C
 
+// counters of 2nd scenario need to be divided by n
+
+int main() {
+    const int n = 10;
+    const int x = 42;
+#ifdef INTERN_PROFILING
+    BenchmarkParameters params;
+    params.setParam("name","fib");
+    {
+      PerfEventBlock e(n, params, /*printHeader=*/true);
+      for (int i = 0; i < n; ++i)
+        fib(42);
+    }
+    // ALTERNATIVE USAGE:
+    //PerfEvent e;
+    //e.startCounters();
+    //for (int i = 0; i < n; ++i)
+    //  fib(42); 
+    //e.stopCounters();
+    //e.printReport(std::cout, n); // use n as scale factor
+    //std::cout << std::endl;
+#else
+    std::cout << "press enter";
     std::string test;
     std::getline(std::cin, test);
-    std::cout << "start";
-#ifdef INTERN_PROFILING
-    for (auto i = 0; i < 20; i++) {
-        timeAndProfileFibonacci("", 20, fib, 40);
-    }
-#else
-    fib(40);
+    for (int i = 0; i < n; ++i)
+      fib(42);
 #endif
     return 0;
 }
