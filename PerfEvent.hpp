@@ -69,10 +69,10 @@ struct PerfEvent {
    PerfEvent() {
       registerCounter("cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
       registerCounter("instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
-      registerCounter("L1-misses", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_L1D|(PERF_COUNT_HW_CACHE_OP_READ<<8)|(PERF_COUNT_HW_CACHE_RESULT_MISS<<16));
+      //registerCounter("L1-misses", PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_L1D|(PERF_COUNT_HW_CACHE_OP_READ<<8)|(PERF_COUNT_HW_CACHE_RESULT_MISS<<16));
       registerCounter("LLC-misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES);
       registerCounter("branch-misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES);
-      registerCounter("task-clock", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK);
+      //registerCounter("task-clock", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK);
       // additional counters can be found in linux/perf_event.h
 
       for (unsigned i=0; i<events.size(); i++) {
@@ -184,12 +184,12 @@ struct PerfEvent {
          printCounter(headerOut,dataOut,names[i],events[i].readCounter()/normalizationConstant);
       }
 
-      printCounter(headerOut,dataOut,"scale",normalizationConstant);
+      //printCounter(headerOut,dataOut,"scale",normalizationConstant);
 
       // derived metrics
-      printCounter(headerOut,dataOut,"IPC",getIPC());
-      printCounter(headerOut,dataOut,"CPUs",getCPUs());
-      printCounter(headerOut,dataOut,"GHz",getGHz(),false);
+      //printCounter(headerOut,dataOut,"IPC",getIPC());
+      //printCounter(headerOut,dataOut,"CPUs",getCPUs());
+      //printCounter(headerOut,dataOut,"GHz",getGHz(),false);
    }
 };
 
@@ -228,24 +228,29 @@ struct PerfEventBlock {
    uint64_t scale;
    BenchmarkParameters parameters;
    bool printHeader;
+   std::string& header;
+   std::string& data;
 
-   PerfEventBlock(uint64_t scale = 1, BenchmarkParameters params = {}, bool printHeader = true)
+   PerfEventBlock(uint64_t scale, BenchmarkParameters params, std::string& header, std::string& data, bool printHeader = true)
        : scale(scale),
          parameters(params),
-         printHeader(printHeader) {
+         printHeader(printHeader),
+         header(header),
+         data(data){
      e.startCounters();
    }
 
    ~PerfEventBlock() {
      e.stopCounters();
-     std::stringstream header;
-     std::stringstream data;
-     parameters.printParams(header,data);
-     PerfEvent::printCounter(header,data,"time sec",e.getDuration());
-     e.printReport(header, data, scale);
+
+     std::stringstream headerStream;
+     std::stringstream dataStream;
+     //parameters.printParams(headerStream,dataStream);
+     //PerfEvent::printCounter(headerStream,dataStream,"time sec",e.getDuration());
+     e.printReport(headerStream, dataStream, scale);
      if (printHeader)
-       std::cout << header.str() << std::endl;
-     std::cout << data.str() << std::endl;
+       header = headerStream.str();
+     data = dataStream.str();
    }
 };
 

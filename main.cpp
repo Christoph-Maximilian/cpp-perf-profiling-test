@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "PerfEvent.hpp"
 
-//#define INTERN_PROFILING
+#define INTERN_PROFILING
 
 int fib(int x) {
     if (x == 0) return 0;
@@ -23,16 +23,22 @@ int fib(int x) {
 // counters of 2nd scenario need to be divided by n
 
 int main() {
-    const int n = 10;
+    const int n = 1;
     const int x = 42;
+    std::string header;
+    std::string data;
 #ifdef INTERN_PROFILING
     BenchmarkParameters params;
-    params.setParam("name","fib");
+    params.setParam("name", "fib");
     {
-      PerfEventBlock e(n, params, /*printHeader=*/true);
-      for (int i = 0; i < n; ++i)
-        fib(42);
+        PerfEventBlock e(n, params, header, data, true);
+        for (int i = 0; i < n; ++i)
+            fib(42);
     }
+
+    std::cout << header << std::endl;
+    std::cout << data   << std::endl;
+
     // ALTERNATIVE USAGE:
     //PerfEvent e;
     //e.startCounters();
